@@ -1,0 +1,14 @@
+[Unit]
+Description=Uploads solar panel data to EnergieID by means of a webhook.
+After=syslog.target network.target
+
+[Service]
+User=energieid
+Group=energieid
+Type=simple
+
+WorkingDirectory=/usr/share/energieid
+ExecStart=/usr/java/17/bin/java -jar energieid.jar config.properties
+
+[Install]
+WantedBy=multi-user.target
