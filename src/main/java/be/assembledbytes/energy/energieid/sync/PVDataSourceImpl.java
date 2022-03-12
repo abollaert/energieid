@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,11 +16,17 @@ import java.util.List;
 public class PVDataSourceImpl implements PVDataSource {
 
     private static final String SELECT_TOTALS = """
-            select date(dd.datetime), max(etotaltoday)
-            from DayData dd
-            where date(dd.datetime) > ? and date(dd.datetime) <= ? 
-            group by date(dd.datetime)
-            order by date(dd.datetime) desc
+            select readings.date_time, readings.reading
+            from
+            (
+                select dd.datetime as date_time,
+                       dd.etotaltoday as reading,
+                       row_number() over (partition by date(dd.datetime) order by etotaltoday desc) as row_num
+                from DayData dd
+            ) readings
+            where readings.date_time >= ? and readings.date_time < ?
+            and readings.row_num = 1
+            order by readings.date_time desc
             """;
 
     private final String databaseHost;
@@ -44,12 +51,12 @@ public class PVDataSourceImpl implements PVDataSource {
                                                                                      this.databaseName,
                                                                                      this.databaseUser,
                                                                                      this.databasePassword))) {
-            final DateFormat fromFormat = new SimpleDateFormat("yyyy-MM-dd");
-            final DateFormat toFormat = new SimpleDateFormat("yyyy-MM-dd");
+            final DateFormat fromFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            final DateFormat toFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
             final PreparedStatement statement = connection.prepareStatement(SELECT_TOTALS);
 
-            statement.setString(1, fromFormat.format(Date.from(from)));
+            statement.setString(1, fromFormat.format(Date.from(from.plus(1, ChronoUnit.DAYS))));
             statement.setString(2, toFormat.format(Date.from(to)));
 
             final List<Data> datapoints = new ArrayList<>();

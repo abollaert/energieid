@@ -37,6 +37,8 @@ public final class PVDataSync {
 
             final List<Data> datapoints = dataSource.getData(Instant.now().minus(100, ChronoUnit.DAYS), Instant.now());
 
+            System.out.println(datapoints);
+
             logger.info("Posting {} datapoints to EnergieID.", datapoints.size());
 
             final EnergieIDClient client = new EnergieIDClientImpl(configuration.energieIdWebhook());
