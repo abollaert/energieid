@@ -8,10 +8,13 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class PVDataSourceImpl implements PVDataSource {
 
@@ -64,10 +67,19 @@ public class PVDataSourceImpl implements PVDataSource {
             final ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
-                final Date timestamp = resultSet.getTimestamp(1);
+                Instant timestamp = Instant.ofEpochMilli(resultSet.getTimestamp(1).getTime());
+
+                final LocalDate localDate = LocalDate.ofInstant(timestamp, ZoneId.of(TimeZone.getDefault().getID()));
+
+                if (!localDate.isEqual(LocalDate.now())) {
+                    timestamp = localDate.plus(1, ChronoUnit.DAYS)
+                                         .atStartOfDay()
+                                         .toInstant(ZoneId.systemDefault().getRules().getOffset(timestamp));
+                }
+
                 final double data = resultSet.getDouble(2);
 
-                datapoints.add(new Data(timestamp, data));
+                datapoints.add(new Data(Date.from(timestamp), data));
             }
 
             return datapoints;
