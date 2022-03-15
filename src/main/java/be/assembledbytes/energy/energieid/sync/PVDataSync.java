@@ -3,14 +3,11 @@ package be.assembledbytes.energy.energieid.sync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Properties;
 
 public final class PVDataSync {
 
