@@ -49,7 +49,7 @@ public class PVDataSourceImpl implements PVDataSource {
 
     @Override
     public List<Data> getData(final Instant from, final Instant to) {
-        try (final Connection connection = DriverManager.getConnection(String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
+        try (final Connection connection = DriverManager.getConnection(String.format("jdbc:mariadb://%s/%s?user=%s&password=%s",
                                                                                      this.databaseHost,
                                                                                      this.databaseName,
                                                                                      this.databaseUser,
